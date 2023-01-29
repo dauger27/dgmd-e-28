@@ -1,0 +1,137 @@
+<html>
+
+<head>
+    <title>DGMD E-28 Newletter - Dan Auger Information</title>
+    <style type="" text/css">
+        body {
+            background-color:#F8F8F8;
+        }
+
+        h1, h3 {
+            text-align: center;
+        }
+
+        #container {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            font-size: 18px;
+        }
+
+        .label, label {
+            font-weight: bold;
+        }
+        .label {
+            padding-right: 5px;
+        }
+
+        .section {
+            margin-bottom: 1rem;
+        }
+        .subsection {
+            margin-left: 1rem;
+        }
+
+        img {
+            width: 100%;
+        }
+
+        a {
+            color: black;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        a:hover {
+            color: red;
+        }
+
+        input[type=text], input[type=email] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 3px solid #ccc;
+            -webkit-transition: 0.5s;
+            transition: 0.5s;
+            outline: none;
+        }
+        input[type=text]:focus, input[type=email]:focus {
+            border: 3px solid #555;
+        }
+        input[type=checkbox] {
+            padding: 12px 20px;
+            margin: 8px 0 1rem 1rem;
+        }
+        input[type=button] {
+            border: none;
+            color: black;
+            background-color: #A1DFF0;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 16px 32px;
+            text-decoration: none;
+            margin: 4px 2px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        footer {
+            font-size: 12px;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h1>DGMD E-28 Student Portfolio Newletter</h1>
+        <div class="section">
+            <div class="subsection">
+                <span class="label">Name:</span>Dan Auger
+            </div>
+            <div class="subsection">
+                <span class="label">Location:</span>Chicago, IL
+            </div>
+            <div class="subsection">
+                <span class="label">Major:</span>Bachelor of Liberal Arts in Extension Studies, Concentration:
+                Sciences
+            </div>
+        </div>
+
+        <div class="section">
+            I have experience with back-end development. I focused predominately on database functionality. I have taken
+            a front-end web application class a few years ago.
+        </div>
+
+        <div class="section">
+            <img src="IMG_2983_1673654672.webp" art="Boardgame Store" title="Geeky Teas & Games&#10;Burbank, CA">
+        </div>
+
+        <div class="section">
+            One of my favorite restaurants is <a href="https://www.francoschicago.com/">Franco's Ristorante</a>.
+        </div>
+
+        <div class="section">
+            <form action='#' method='post'>
+                <div class="section">
+                    <h3>Please subscribe to the newsleter!</h3>
+                </div>
+                <label for="firstname">First Name:</label>
+                <input type="text" name='firstname' id='firstname'>
+                <label for="lastname">Last Name:</label> <input type="text" name='lastname' id='lastname'>
+                <label for="email">Email:</label> <input type="email" name='email' id='email'>
+
+                <input type="checkbox" class="section" name="acknowledge" id="acknowledge" value="acknowledge"
+                    title="Acknowledgement">
+                <label for="acknowledge">I acknowledge that this will add me to the newletter.</label>
+
+                <input type="button" value="Subscribe" onclick="alert('Thank you for subscribing to the newsletter!')">
+            </form>
+        </div>
+
+        <footer>Dan Auger, 2023 - DGMD E-28</footer>
+    </div>
+</body>
+
+</html>
