@@ -1,0 +1,113 @@
+<html>
+
+<head>
+    <title>Tic Tac Toe - Part 1</title>
+    <style type="text/css">
+        body {
+            background-color: #F8F8F8;
+        }
+
+        h1,
+        #message {
+            text-align: center;
+        }
+
+        #container,
+        #board {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+        }
+
+        #container {
+            font-size: 18px;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+
+        .row:not(:last-child) {
+            border-bottom: 2px solid #000000;
+        }
+
+        .column {
+            flex: 1 1 auto;
+            text-align: center;
+        }
+
+        .column:not(:last-child) {
+            border-right: 2px solid #000000;
+        }
+
+        .empty-cell {
+            color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        window.onload = function () {
+            // Generate the rows
+            for (i = 0; i < 3; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+
+                document.getElementById("board").appendChild(row);
+
+                // Generate the column for this row
+                for (j = 0; j < 3; j++) {
+                    const col = document.createElement('div');
+                    col.className = 'column empty-cell';
+                    col.setAttribute("name", 'row_' + i + '_col_' + j);
+                    col.id = 'row_' + i + '_col_' + j;
+
+                    // Flex box doesn't like empty div so using N as placeholder for empty
+                    col.innerText = 'N';
+
+                    // Set certain cells to be visible and have Xs and Os for demo purposes
+                    if (i == 0 && (j == 0 || j == 2)) {
+                        col.innerText = 'X';
+                        col.className = 'column';
+                        console.log('Storing X into ' + squares.get(col.id));
+                    } else if ((i == 0 && j == 1) || (i == 1 && j == 1) || (i == 2 && j == 0)) {
+                        col.innerText = 'O';
+                        col.className = 'column';
+                        console.log('Storing O into ' + squares.get(col.id));
+                    }
+
+                    row.appendChild(col);
+                }
+            }
+        }
+    </script>
+
+    <div id="container">
+        <h1>Tic Tac Toe</h1>
+
+        <div id="message">
+            <p>X to play</p>
+        </div>
+
+        <div id="board"></div>
+    </div>
+
+    <script>
+        // Human readable map for row/column location
+        const squares = new Map();
+        squares.set('row_0_col_0', "Top Left");
+        squares.set('row_0_col_1', "Top Center");
+        squares.set('row_0_col_2', "Top Right");
+        squares.set('row_1_col_0', "Middle Left");
+        squares.set('row_1_col_1', "Middle Center");
+        squares.set('row_1_col_2', "Middle Right");
+        squares.set('row_2_col_0', "Bottom Left");
+        squares.set('row_2_col_1', "Bottom Center");
+        squares.set('row_2_col_2', "Bottom Right");
+    </script>
+</body>
+
+</html>
