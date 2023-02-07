@@ -12,15 +12,21 @@
             text-align: center;
         }
 
-        #container,
-        #board {
+        #container {
             position: absolute;
             left: 20%;
             right: 20%;
+            font-size: 18px;
         }
 
-        #container {
-            font-size: 18px;
+        #board {
+            padding: 10px;
+            margin-bottom: 1rem;
+            width: 50%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
         }
 
         .row {
@@ -44,6 +50,29 @@
 
         .empty-cell {
             color: transparent;
+        }
+
+        #history {
+            border-top: 1px dashed #000000;
+            text-align: center;
+        }
+
+        ul {
+            margin: 0;
+            display: inline-block;
+            text-align: left;
+        }
+
+        li {
+            list-style-type: none
+        }
+
+        .x-color {
+            color: #008000;
+        }
+
+        .o-color {
+            color: #0000FF;
         }
     </style>
 </head>
@@ -71,11 +100,11 @@
                     // Set certain cells to be visible and have Xs and Os for demo purposes
                     if (i == 0 && (j == 0 || j == 2)) {
                         col.innerText = 'X';
-                        col.className = 'column';
+                        col.className = 'column x-color';
                         console.log('Storing X into ' + squares.get(col.id));
                     } else if ((i == 0 && j == 1) || (i == 1 && j == 1) || (i == 2 && j == 0)) {
                         col.innerText = 'O';
-                        col.className = 'column';
+                        col.className = 'column o-color';
                         console.log('Storing O into ' + squares.get(col.id));
                     }
 
@@ -89,10 +118,21 @@
         <h1>Tic Tac Toe</h1>
 
         <div id="message">
-            <p>X to play</p>
+            <p class="x-color">X to play</p>
         </div>
 
         <div id="board"></div>
+
+        <div id="history">
+            <h3>Order History</h3>
+            <ul>
+                <li class="o-color">O into Middle Center</li>
+                <li class="x-color">X into Top Left</li>
+                <li class="o-color">O into Bottom Left</li>
+                <li class="x-color">X into Top Right</li>
+                <li class="o-color">O into Top Center</li>
+            </ul>
+        </div>
     </div>
 
     <script>
