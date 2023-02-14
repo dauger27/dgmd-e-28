@@ -1,0 +1,314 @@
+<html>
+
+<head>
+    <title>Tic Tac Toe - Part 2</title>
+    <style type="text/css">
+        body {
+            background-color: #F8F8F8;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #container {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            font-size: 18px;
+        }
+
+        #message {
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+        /* Board functionality */
+        #board {
+            padding: 10px;
+            margin-bottom: 1rem;
+            width: 50%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+
+        .row:not(:last-child) {
+            border-bottom: 2px solid #000000;
+        }
+
+        .column {
+            flex: 1 1 auto;
+            text-align: center;
+        }
+
+        .column:not(:last-child) {
+            border-right: 2px solid #000000;
+        }
+
+        .empty-cell {
+            color: transparent;
+        }
+
+        /* Order History functionality */
+        #history {
+            border-top: 1px dashed #000000;
+            text-align: center;
+        }
+
+        #history-list {
+            margin: 0;
+            display: inline-block;
+            text-align: left;
+            /* Leave space before footer */
+            height: 184px;
+        }
+
+        li {
+            list-style-type: none
+        }
+
+        /* Text colors */
+        .x-color {
+            color: #008000;
+        }
+
+        .o-color {
+            color: #0000FF;
+        }
+
+        .end-game {
+            color: #FF0000;
+        }
+
+        /* Create the end-game line on a win */
+        .rdiag {
+            background: linear-gradient(to bottom right, #F8F8F8, #F8F8F8 48%, #FF0000 48%, #FF0000 52%, #F8F8F8 52%, #F8F8F8);
+        }
+
+        .ldiag {
+            background: linear-gradient(to bottom left, #F8F8F8, #F8F8F8 48%, #FF0000 48%, #FF0000 52%, #F8F8F8 52%, #F8F8F8);
+        }
+
+        .horizontal {
+            background: linear-gradient(to bottom, #F8F8F8, #F8F8F8 45%, #FF0000 45%, #FF0000 55%, #F8F8F8 55%, #F8F8F8);
+        }
+
+        .vertical {
+            background: linear-gradient(to right, #F8F8F8, #F8F8F8 48%, #FF0000 48%, #FF0000 52%, #F8F8F8 52%, #F8F8F8);
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 12px;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        var board, messaging, history_list;
+        var turns = 0;
+
+        window.onload = function () {
+            // Determine first player randomly
+            let current = (Math.random() <= 0.5) ? 'X' : 'O';
+
+            // Set initial messaging
+            messaging = document.getElementById("message");
+            messaging.className = current + '-color';
+            messaging.innerText = current + ' to play';
+            console.log(messaging.innerText);
+
+            // Generate the board
+            board = document.getElementById("board");
+            for (i = 0; i < 3; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+
+                board.appendChild(row);
+
+                // Generate the column for this row
+                for (j = 0; j < 3; j++) {
+                    const col = document.createElement('div');
+                    col.className = 'column empty-cell';
+                    col.setAttribute("name", 'row_' + i + '_col_' + j);
+                    col.id = 'row_' + i + '_col_' + j;
+
+                    // Flex box doesn't like empty div so using N as placeholder for empty
+                    col.innerText = 'N';
+
+                    // Create single-use click event listener
+                    col.addEventListener("click", function () {
+                        updatePage(current, this);
+
+                        if (checkBoard()) {
+                            // Game continues
+                            updateMessage(current);
+                        }
+
+                        current = (current == 'X') ? 'O' : 'X';
+                    }, { once: true });
+
+                    row.appendChild(col);
+                }
+            }
+
+            history_list = document.getElementById('history-list');
+        }
+
+        // Update order history and board
+        function updatePage(player, element) {
+            // Add information to History
+            let li = document.createElement('li');
+
+            li.className = player + '-color';
+            li.innerText = player + ' into ' + squares.get(element.id);
+
+            history_list.appendChild(li);
+            console.log(li.innerText);
+
+            // Update the board for the player move
+            element.className = 'column ' + player + '-color';
+            element.innerText = player;
+        }
+
+        // Check the board to determine end-game state (stalemate, win, mid-game)
+        function checkBoard() {
+            let winner;
+
+            // Skip board check if not enough moves for a victory have been played
+            if (turns++ < 4) {
+                return true;
+            }
+
+            // Check rows and columns
+            for (i = 0; i < 3; i++) {
+                // Check row information
+                let col_0 = window['row_' + i + '_col_0'].innerText;
+                let col_1 = window['row_' + i + '_col_1'].innerText;
+                let col_2 = window['row_' + i + '_col_2'].innerText;
+
+                if (col_0 == col_1 && col_0 == col_2 && col_0 != 'N') {
+                    console.log('ROW WIN WITH ' + col_0);
+                    winner = col_0;
+                    window['row_' + i + '_col_0'].classList.add('horizontal');
+                    window['row_' + i + '_col_1'].classList.add('horizontal');
+                    window['row_' + i + '_col_2'].classList.add('horizontal');
+                    break;
+                }
+
+                // Check col information
+                let row_0 = window['row_0_col_' + i].innerText;
+                let row_1 = window['row_1_col_' + i].innerText;
+                let row_2 = window['row_2_col_' + i].innerText;
+
+                if (row_0 == row_1 && row_0 == row_2 && row_0 != 'N') {
+                    console.log('COLUMN WIN WITH ' + row_0);
+                    winner = row_0;
+                    window['row_0_col_' + i].classList.add('vertical');
+                    window['row_1_col_' + i].classList.add('vertical');
+                    window['row_2_col_' + i].classList.add('vertical');
+                    break;
+                }
+            }
+
+            // Check Diagonals if no winner found yet
+            if (typeof winner == 'undefined') {
+                let center = row_1_col_1.innerText;
+
+                // Shortcut check (if center is empty skip rest)
+                if (center == 'N') {
+                    return true;
+                }
+
+                let ldiag_top = row_0_col_0.innerText;
+                let ldiag_bot = row_2_col_2.innerText;
+                let rdiag_bot = row_2_col_0.innerText;
+                let rdiag_top = row_0_col_2.innerText;
+
+                if (center == ldiag_top && center == ldiag_bot) {
+                    console.log('L-DIAG WIN WITH ' + center);
+                    winner = center;
+                    row_0_col_0.classList.add('ldiag');
+                    row_1_col_1.classList.add('ldiag');
+                    row_2_col_2.classList.add('ldiag');
+                } else if (center == rdiag_bot && center == rdiag_top) {
+                    console.log('R-DIAG WIN WITH ' + center);
+                    winner = center;
+                    row_2_col_0.classList.add('rdiag');
+                    row_1_col_1.classList.add('rdiag');
+                    row_0_col_2.classList.add('rdiag');
+                }
+            }
+
+            // No winner found yet
+            if (typeof winner == 'undefined') {
+                if (turns == 9) {
+                    // Stalemate scenario
+                    board.setAttribute("style", "pointer-events:none");
+                    messaging.className = 'end-game';
+                    messaging.innerText = 'The game ends in a stalemate';
+                    return false;
+                } else {
+                    // Continue playing the game
+                    return true;
+                }
+            } else {
+                // Winner found!
+                board.setAttribute("style", "pointer-events:none");
+                messaging.className = 'end-game';
+                messaging.innerHTML = 'The game ends with a win for <span class="' + winner + '-color"><b>' + winner + '</b></span>.';
+                return false;
+            }
+        }
+
+        // Update message for player move (swapping player information)
+        function updateMessage(player) {
+            p = (player == 'X') ? 'O' : 'X';
+            messaging.className = p + '-color';
+            messaging.innerText = p + ' to play';
+            console.log(messaging.innerText);
+        }
+    </script>
+
+    <div id="container">
+        <h1>Tic Tac Toe</h1>
+
+        <div id="message"></div>
+
+        <div id="board"></div>
+
+        <div id="history">
+            <h3>Order History</h3>
+            <ul id="history-list"></ul>
+        </div>
+
+        <footer>Dan Auger, 2023 - DGMD E-28</footer>
+    </div>
+
+    <script>
+        // Human readable map for row/column location
+        const squares = new Map();
+        squares.set('row_0_col_0', "Top Left");
+        squares.set('row_0_col_1', "Top Center");
+        squares.set('row_0_col_2', "Top Right");
+        squares.set('row_1_col_0', "Middle Left");
+        squares.set('row_1_col_1', "Middle Center");
+        squares.set('row_1_col_2', "Middle Right");
+        squares.set('row_2_col_0', "Bottom Left");
+        squares.set('row_2_col_1', "Bottom Center");
+        squares.set('row_2_col_2', "Bottom Right");
+    </script>
+</body>
+
+</html>
