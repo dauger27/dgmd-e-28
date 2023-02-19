@@ -15,11 +15,12 @@
             text-align: center;
         }
 
-        .menu-list {
+        .align-list,
+        #cart-items {
             display: inline-block;
         }
 
-        .menu-list>ul {
+        ul {
             text-align: left;
             padding: 5px 10px;
         }
@@ -47,11 +48,20 @@
         }
 
         #cart-items,
-        #costs {
-            display: inline-block;
-            text-align: left;
+        #cost-categories,
+        #cost-amounts {
             margin: 0 0 10px 0;
-            padding: 5px 10px;
+        }
+
+        .empty {
+            font-style: italic;
+            font-size: 20px;
+            color: #FF0000;
+        }
+
+        #message {
+            font-size: 22px;
+            font-weight: bold;
         }
 
         footer {
@@ -79,64 +89,70 @@
             currency: 'USD',
         });
 
-        window.onload = function () {
-            // Get changing HTML elements
-            const message = document.getElementById('message');
-            const cart_items = document.getElementById("cart-items");
-            const costs = document.getElementById("costs");
+        // HTML updated within functions below
+        var message, cart_items, cost_categories, cost_amounts;
 
-            // Handle prompts and error checks for adding items
-            addItem = function () {
-                input = prompt("Enter the number of the item you want.");
+        // Handle prompts and error checks for adding items
+        addItem = function () {
+            input = prompt("Enter the number of the item you want.");
 
-                if (input !== null) {
-                    //User didn't press cancel
-                    item = parseInt(input);
+            if (input !== null) {
+                //User didn't press cancel
+                item = parseInt(input);
 
-                    if (isNaN(item) || !(item in menu)) {
-                        alert(input + " is not a valid menu option.");
-                    } else {
-                        input = prompt("How many do you want?");
+                if (isNaN(item) || !(item in menu)) {
+                    alert(input + " is not a valid menu option.");
+                } else {
+                    input = prompt("How many do you want?");
 
-                        if (input !== null) {
-                            //User didn't press cancel
-                            amount = parseInt(input);
+                    if (input !== null) {
+                        //User didn't press cancel
+                        amount = parseInt(input);
 
-                            if (isNaN(amount) || amount < 0) {
-                                alert(input + " is not a valid amount.");
-                            } else {
-                                order[item] += amount;
-                                alert("Adding " + amount + " " + menu[item]['name']);
-                            }
+                        if (isNaN(amount) || amount < 0) {
+                            alert(input + " is not a valid amount.");
+                        } else {
+                            order[item] += amount;
+                            alert("Adding " + amount + " " + menu[item]['name']);
                         }
                     }
                 }
             }
+        }
 
-            // Calculate totals and display order
-            showCart = function () {
-                let subtotal = 0;
-                let discount = 0;
-                let taxes = 0;
-                let total = 0;
+        // Calculate totals and display order
+        showCart = function () {
+            let subtotal = 0;
+            let discount = 0;
+            let taxes = 0;
+            let total = 0;
+            let costs;
 
-                // Clear HTML
-                message.innerHTML = '';
-                cart_items.innerHTML = '';
-                costs.innerHTML = '';
+            // Clear HTML
+            message.innerHTML = '';
+            cart_items.innerHTML = '';
+            cost_categories.innerHTML = '';
+            cost_amounts.innerHTML = '';
 
-                // Generate list items
-                for (i = 1; i <= 4; i++) {
-                    if (order[i] > 0) {
-                        let li = document.createElement('li');
-                        li.innerText = "(" + order[i] + ") " + menu[i]['name'];
-                        cart_items.appendChild(li);
+            // Generate list items
+            for (i = 1; i <= 4; i++) {
+                if (order[i] > 0) {
+                    let li = document.createElement('li');
+                    li.innerText = "(" + order[i] + ") " + menu[i]['name'];
+                    cart_items.appendChild(li);
 
-                        subtotal += order[i] * menu[i]['price'];
-                    }
+                    subtotal += order[i] * menu[i]['price'];
                 }
+            }
 
-                // Determine costs
+            // Display either empty cart or calculated costs
+            if (subtotal == 0) {
+                let li = document.createElement('li');
+                li.className = 'empty';
+                li.innerText = "Empty";
+                cart_items.appendChild(li);
+            } else {
+                // Calculate costs
                 if (subtotal > 20) {
                     // Apply a discount
                     discount = subtotal * 0.1;
@@ -144,47 +160,51 @@
                 taxes = (subtotal - discount) * 0.0625;
                 total = subtotal - discount + taxes;
 
-                // Display costs
-                const sub = document.createElement('li');
-                sub.innerText = "Subtotal: " + currency.format(subtotal);
-                costs.appendChild(sub);
-
                 if (discount) {
-                    const dis = document.createElement('li');
-                    dis.innerText = "Discount: " + currency.format(discount);
-                    costs.appendChild(dis);
+                    costs = { "Subtotal": subtotal, "Discount": discount, "Taxes": taxes, "Total": total };
+                } else {
+                    costs = { "Subtotal": subtotal, "Taxes": taxes, "Total": total };
                 }
 
-                const tax = document.createElement('li');
-                tax.innerText = "Taxes: " + currency.format(taxes);
-                costs.appendChild(tax);
+                Object.keys(costs).forEach(key => {
+                    // Create category
+                    const category = document.createElement('li');
+                    category.innerText = key;
+                    cost_categories.appendChild(category);
 
-                const gto = document.createElement('li');
-                gto.innerText = "Total: " + currency.format(total);
-                costs.appendChild(gto);
-
-                // Show cart
-                document.getElementById("cart").classList.remove("hidden");
+                    // Create amount
+                    const amount = document.createElement('li');
+                    amount.innerText = currency.format(costs[key]);
+                    cost_amounts.appendChild(amount);
+                });
             }
 
-            // Display checkout message and clear order
-            checkOut = function () {
-                message.innerHTML = ''; // Clear its contents
+            // Show cart
+            document.getElementById("cart").classList.remove("hidden");
+        }
 
-                let h3 = document.createElement('h3')
-                h3.innerText = "Thank you for your order!";
-                message.appendChild(h3);
+        // Display checkout message and clear order
+        checkOut = function () {
+            message.innerText = "Thank you for your order!";
 
-                // Clear order
-                for (i = 1; i <= 4; i++) {
-                    order[i] = 0;
-                }
-
-                // Clear and hide cart
-                document.getElementById("cart").classList.add("hidden");
-                cart_items.innerHTML = ''; // Clears its contents
-                costs.innerHTML = ''; // Clears its contents
+            // Clear order
+            for (i = 1; i <= 4; i++) {
+                order[i] = 0;
             }
+
+            // Clear and hide cart
+            document.getElementById("cart").classList.add("hidden");
+            cart_items.innerHTML = '';
+            cost_categories.innerHTML = '';
+            cost_amounts.innerHTML = '';
+        }
+
+        window.onload = function () {
+            // Get changing HTML elements
+            message = document.getElementById('message');
+            cart_items = document.getElementById("cart-items");
+            cost_categories = document.getElementById("cost-categories");
+            cost_amounts = document.getElementById("cost-amounts");
         }
     </script>
 
@@ -193,7 +213,7 @@
 
         <div id="menu">
             <h3>Menu Items</h3>
-            <div class="menu-list">
+            <div class="align-list">
                 <ul>
                     <script>
                         for (item in menu)
@@ -201,7 +221,7 @@
                     </script>
                 </ul>
             </div>
-            <div class="menu-list">
+            <div class="align-list">
                 <ul>
                     <script>
                         for (item in menu)
@@ -224,8 +244,11 @@
             <div>
                 <ul id="cart-items"></ul>
             </div>
-            <div>
-                <ul id="costs"></ul>
+            <div class="align-list">
+                <ul id="cost-categories"></ul>
+            </div>
+            <div class="align-list">
+                <ul id="cost-amounts"></ul>
             </div>
         </div>
 
