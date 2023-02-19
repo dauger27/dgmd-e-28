@@ -207,7 +207,7 @@
                 <ul>
                     <script>
                         for (item in menu)
-                            document.write("<li>$" + menu[item]['price'] + "</li>")
+                            document.write("<li>" + currency.format(menu[item]['price']) + "</li>")
                     </script>
                 </ul>
             </div>
