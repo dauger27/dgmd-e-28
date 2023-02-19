@@ -1,0 +1,238 @@
+<html>
+
+<head>
+    <title>Joe's Hotdogs!</title>
+    <style type="text/css">
+        body {
+            background-color: #F8F8F8;
+        }
+
+        #container {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .menu-list {
+            display: inline-block;
+        }
+
+        .menu-list>ul {
+            display: inline-block;
+            text-align: left;
+            padding-inline-start: 0;
+            padding: 5px 10px;
+        }
+
+        li {
+            list-style-type: none
+        }
+
+        #buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            margin: 1rem 0;
+        }
+
+        .button {
+            background-color: #A1DFF0;
+            font-weight: bold;
+            padding: 16px 32px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            color: transparent;
+        }
+
+        #cart-items,
+        #costs {
+            display: inline-block;
+            text-align: left;
+            margin: 0 0 10px 0;
+            padding: 5px 10px;
+        }
+
+        footer {
+            margin-top: 10px;
+            font-size: 12px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        const menu = {
+            1: { "name": "Hotdog", "price": 4 },
+            2: { "name": "French Fries", "price": 3.5 },
+            3: { "name": "Soda", "price": 1.5 },
+            4: { "name": "Sauerkraut", "price": 1 }
+        };
+
+        const order = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+        // Create our currency formatter
+        const currency = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+        });
+
+        window.onload = function () {
+            // Get changing HTML elements
+            const message = document.getElementById('message');
+            const cart_items = document.getElementById("cart-items");
+            const costs = document.getElementById("costs");
+
+            // Handle prompts and error checks for adding items
+            addItem = function () {
+                input = prompt("Enter the number of the item you want.");
+
+                if (input !== null) {
+                    //User didn't press cancel
+                    item = parseInt(input);
+
+                    if (isNaN(item) || !(item in menu)) {
+                        alert(input + " is not a valid menu option.");
+                    } else {
+                        input = prompt("How many do you want?");
+
+                        if (input !== null) {
+                            //User didn't press cancel
+                            amount = parseInt(input);
+
+                            if (isNaN(amount) || amount < 0) {
+                                alert(input + " is not a valid amount.");
+                            } else {
+                                order[item] += amount;
+                                alert("Adding " + amount + " " + menu[item]['name']);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Calculate totals and display order
+            showCart = function () {
+                let subtotal = 0;
+                let discount = 0;
+                let taxes = 0;
+                let total = 0;
+
+                // Clear HTML
+                message.innerHTML = '';
+                cart_items.innerHTML = '';
+                costs.innerHTML = '';
+
+                // Generate list items
+                for (i = 1; i <= 4; i++) {
+                    if (order[i] > 0) {
+                        let li = document.createElement('li');
+                        li.innerText = "(" + order[i] + ") " + menu[i]['name'];
+                        cart_items.appendChild(li);
+
+                        subtotal += order[i] * menu[i]['price'];
+                    }
+                }
+
+                // Determine costs
+                if (subtotal > 20) {
+                    // Apply a discount
+                    discount = subtotal * 0.1;
+                }
+                taxes = (subtotal - discount) * 0.0625;
+                total = subtotal - discount + taxes;
+
+                // Display costs
+                const sub = document.createElement('li');
+                sub.innerText = "Subtotal: " + currency.format(subtotal);
+                costs.appendChild(sub);
+
+                if (discount) {
+                    const dis = document.createElement('li');
+                    dis.innerText = "Discount: " + currency.format(discount);
+                    costs.appendChild(dis);
+                }
+
+                const tax = document.createElement('li');
+                tax.innerText = "Taxes: " + currency.format(taxes);
+                costs.appendChild(tax);
+
+                const gto = document.createElement('li');
+                gto.innerText = "Total: " + currency.format(total);
+                costs.appendChild(gto);
+
+                // Show cart
+                document.getElementById("cart").classList.remove("hidden");
+            }
+
+            // Display checkout message and clear order
+            checkOut = function () {
+                message.innerHTML = ''; // Clear its contents
+
+                let h3 = document.createElement('h3')
+                h3.innerText = "Thank you for your order!";
+                message.appendChild(h3);
+
+                // Clear order
+                for (i = 1; i <= 4; i++) {
+                    order[i] = 0;
+                }
+
+                // Clear and hide cart
+                document.getElementById("cart").classList.add("hidden");
+                cart_items.innerHTML = ''; // Clears its contents
+                costs.innerHTML = ''; // Clears its contents
+            }
+        }
+    </script>
+
+    <div id="container">
+        <h1>Joe's Hotdogs</h1>
+
+        <div id="menu">
+            <h3>Menu Items</h3>
+            <div class="menu-list">
+                <ul>
+                    <script>
+                        for (item in menu)
+                            document.write("<li>" + item + ": " + menu[item]['name'] + "</li>")
+                    </script>
+                </ul>
+            </div>
+            <div class="menu-list">
+                <ul>
+                    <script>
+                        for (item in menu)
+                            document.write("<li>$" + menu[item]['price'] + "</li>")
+                    </script>
+                </ul>
+            </div>
+        </div>
+
+        <div id="buttons">
+            <div class="button" onclick="addItem()">Add Items</div>
+            <div class="button" onclick="showCart()">Show Cart</div>
+            <div class="button" onclick="checkOut()">Check Out</div>
+        </div>
+
+        <div id="message"></div>
+
+        <div id="cart" class="hidden">
+            <h3>Cart</h3>
+            <div>
+                <ul id="cart-items"></ul>
+            </div>
+            <div>
+                <ul id="costs"></ul>
+            </div>
+        </div>
+
+        <footer>Dan Auger, 2023 - DGMD E-28</footer>
+    </div>
+</body>
+
+</html>
