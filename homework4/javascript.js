@@ -112,11 +112,6 @@ function placeShips(ships) {
 function checkCell(element) {
     game.turn++;
 
-    // Set turn counter
-    if (game.turn != game.end) {
-        turn_counter.innerText = (game.turn + 1) + " / " + game.end;
-    }
-
     if (game.cells[element.id] === undefined) {
         // Shot missed
         element.classList.add('miss');
@@ -138,8 +133,10 @@ function checkCell(element) {
     }
 
     // Determine end-game state (don't start checking until victory could occur)
+    let game_over = false;
     if (game.turn >= 12) {
         if (game.sunk == game.ships) {
+            game_over = true;
             board.setAttribute("style", "pointer-events:none");
             game_status.innerText = "You Win!";
             game_status.className = 'win';
@@ -148,6 +145,7 @@ function checkCell(element) {
             // Color rest of grid
             colorEmptyCells();
         } else if (game.turn == game.end) {
+            game_over = true;
             board.setAttribute("style", "pointer-events:none");
             game_status.innerText = "You Lose.";
             game_status.className = 'loss';
@@ -161,6 +159,13 @@ function checkCell(element) {
 
             // Color rest of grid
             colorEmptyCells();
+        }
+    }
+
+    // Set turn counter
+    if (!game_over) {
+        if (game.turn != game.end) {
+            turn_counter.innerText = (game.turn + 1) + " / " + game.end;
         }
     }
 }
