@@ -9,6 +9,7 @@
 <body>
     <script>
         window.onload = function () {
+            turn_counter = document.getElementById("turn-counter");
             board = document.getElementById("board");
             message = document.getElementById("shot-status");
             game_status = document.getElementById("game-status");
@@ -23,13 +24,11 @@
         <h1>Battleship!</h1>
 
         <div id="menu">
-            <button id="new-game" onclick="newGame()">New Game</button>
-            <input type="checkbox" id="ships" name="ships">
-            <label for="ships">Dynamic Ships</label>
+            <div id="new-game" class="button" onclick="newGame()">New Game</div>
+            <div id="dynamic" class="button" onclick="dynamicShips()">Dynamic Ships</div>
+            <div id="hint" class="button" onclick="showHints()">Show Ships</div>
         </div>
-        <div id="cheatmode">
-            <button id="hint" onclick="showShips()">Show Ships</button>
-        </div>
+        <div id="turn">Turn: <span id="turn-counter"></span></div>
         <div id="board"></div>
         <div id="shot-status"></div>
         <div id="game-status"></div>

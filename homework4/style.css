@@ -13,54 +13,56 @@ h1 {
     font-size: 18px;
 }
 
-#menu,
-#cheatmode {
+/* Buttons */
+#menu {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
-#new-game {
-    margin-right: 10px;
-}
-
-button {
+.button {
     border: none;
     color: black;
-    background-color: #A1DFF0;
+    background-color: #a1dff0;
     font-weight: bold;
     padding: 16px 32px;
-    text-decoration: none;
     cursor: pointer;
-}
-
-label {
+    display: inline-block;
     font-size: 16px;
 }
 
-/* Game Messaging */
-#shot-status,
-#game-status,
-#game-message {
+.button:hover {
+    background-color: #39c6ec;
+}
+
+.button-pressed,
+.button:active {
+    background-color: #5ca1e7;
+}
+
+.button-pressed:hover {
+    background-color: #abcdef;
+}
+
+.button-pressed:active {
+    background-color: #a1dff0;
+}
+
+#hint.button-pressed {
+    padding: 16px 34px;
+}
+
+/* Turn Counter */
+#turn {
     text-align: center;
-    padding-bottom: 10px;
+    margin-bottom: 1rem;
 }
 
-#game-status {
-    margin-top: 1rem;
+#turn-counter {
     font-weight: bold;
-}
-
-.win {
-    color: #008000;
-}
-
-.loss {
-    color: #ff0000;
 }
 
 /* Board functionality */
 #board {
-    padding: 10px;
     margin-bottom: 1rem;
     width: 50%;
     display: block;
@@ -107,6 +109,27 @@ label {
 
 .empty {
     background-color: #afb1b1;
+}
+
+/* Game Messaging */
+#shot-status,
+#game-status,
+#game-message {
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+#game-status {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.win {
+    color: #008000;
+}
+
+.loss {
+    color: #ff0000;
 }
 
 footer {

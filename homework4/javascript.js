@@ -1,6 +1,8 @@
 // Primary game object set within newGame
 var game;
 var shipValidation;
+var useDynamic = false;
+var showHint = false;
 
 // Generate the board - done a single time
 function buildBoard() {
@@ -26,7 +28,11 @@ function buildBoard() {
 
 // Begin a new game
 function newGame() {
-    game = { cells: [], hits: [], sunk: 0, turn: 0, ships: 4 };
+    // Setup default game information
+    game = { cells: [], hits: [], sunk: 0, turn: 0, ships: 4, end: 20 };
+
+    // Set turn counter
+    turn_counter.innerText = (game.turn + 1) + " / " + game.end;
 
     // Generate listeners for the board cells
     generateListeners();
@@ -45,13 +51,14 @@ function newGame() {
     });
 
     // Determine dynamic ship placement
-    let ships = document.getElementById('ships');
-    if (ships.checked) {
+    if (useDynamic) {
         placeShips(generateShips());
+        showShips();
     } else {
         fetch("ships.json")
             .then(response => response.json())
-            .then(placeShips);
+            .then(placeShips)
+            .then(showShips);
     }
 }
 
@@ -105,6 +112,11 @@ function placeShips(ships) {
 function checkCell(element) {
     game.turn++;
 
+    // Set turn counter
+    if (game.turn != game.end) {
+        turn_counter.innerText = (game.turn + 1) + " / " + game.end;
+    }
+
     if (game.cells[element.id] === undefined) {
         // Shot missed
         element.classList.add('miss');
@@ -135,7 +147,7 @@ function checkCell(element) {
 
             // Color rest of grid
             colorEmptyCells();
-        } else if (game.turn == 20) {
+        } else if (game.turn == game.end) {
             board.setAttribute("style", "pointer-events:none");
             game_status.innerText = "You Lose.";
             game_status.className = 'loss';
@@ -164,11 +176,43 @@ function colorEmptyCells() {
     });
 }
 
-// Show all ship cells -- helpful in debugging
+// Enable or disable dynamic ships on newGame
+function dynamicShips() {
+    const dynamic = document.getElementById('dynamic');
+    if (useDynamic == false) {
+        useDynamic = true;
+        dynamic.classList.add('button-pressed');
+    } else {
+        useDynamic = false;
+        dynamic.classList.remove('button-pressed');
+    }
+}
+
+// Enable or disable showing ship cells
+function showHints() {
+    const hint = document.getElementById('hint');
+    if (showHint == false) {
+        showHint = true;
+        hint.innerText = "Hide Ships";
+        hint.classList.add('button-pressed');
+    } else {
+        showHint = false;
+        hint.innerText = "Show Ships";
+        hint.classList.remove('button-pressed');
+    }
+
+    showShips();
+}
+
+// Show or hide all ship cells
 function showShips() {
     Object.keys(game.cells).forEach((id) => {
         const cell = document.getElementById(id);
-        cell.classList.add('hint');
+        if (showHint) {
+            cell.classList.add('hint');
+        } else {
+            cell.classList.remove('hint');
+        }
     });
 }
 
