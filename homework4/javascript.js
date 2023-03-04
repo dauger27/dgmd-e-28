@@ -164,9 +164,7 @@ function checkCell(element) {
 
     // Set turn counter
     if (!game_over) {
-        if (game.turn != game.end) {
-            turn_counter.innerText = (game.turn + 1) + " / " + game.end;
-        }
+        turn_counter.innerText = (game.turn + 1) + " / " + game.end;
     }
 }
 
