@@ -1,0 +1,117 @@
+body {
+    background-color: #F8F8F8;
+}
+
+h1 {
+    text-align: center;
+}
+
+#container {
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    font-size: 18px;
+}
+
+#menu,
+#cheatmode {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+#new-game {
+    margin-right: 10px;
+}
+
+button {
+    border: none;
+    color: black;
+    background-color: #A1DFF0;
+    font-weight: bold;
+    padding: 16px 32px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+label {
+    font-size: 16px;
+}
+
+/* Game Messaging */
+#shot-status,
+#game-status,
+#game-message {
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+#game-status {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.win {
+    color: #008000;
+}
+
+.loss {
+    color: #ff0000;
+}
+
+/* Board functionality */
+#board {
+    padding: 10px;
+    margin-bottom: 1rem;
+    width: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    border-top: 2px solid #000000;
+}
+
+.row:last-child {
+    border-bottom: 2px solid #000000;
+}
+
+.cell {
+    flex: 1 1 auto;
+    border-left: 2px solid #000000;
+}
+
+.cell:last-child {
+    border-right: 2px solid #000000;
+}
+
+/* Cell Coloring */
+.hint {
+    background-color: #45d796;
+}
+
+.highlight {
+    background-color: #ee8787;
+}
+
+.hit {
+    background-color: #ff0000;
+}
+
+.miss {
+    background-color: #808080;
+}
+
+.empty {
+    background-color: #afb1b1;
+}
+
+footer {
+    margin-top: 3rem;
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+}

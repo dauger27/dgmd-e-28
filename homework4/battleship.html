@@ -2,220 +2,8 @@
 
 <head>
     <title>Battleship!</title>
-    <style type="text/css">
-        body {
-            background-color: #F8F8F8;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        #container {
-            position: absolute;
-            left: 20%;
-            right: 20%;
-            font-size: 18px;
-        }
-
-        /* Game Messaging */
-        #shot-status,
-        #game-status,
-        #game-message {
-            text-align: center;
-            padding-bottom: 10px;
-        }
-
-        #game-status {
-            margin-top: 1rem;
-            font-weight: bold;
-        }
-
-        .win {
-            color: #008000;
-        }
-
-        .loss {
-            color: #ff0000;
-        }
-
-        /* Board functionality */
-        #board {
-            padding: 10px;
-            margin-bottom: 1rem;
-            width: 50%;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            cursor: pointer;
-        }
-
-        .row {
-            display: flex;
-            flex-direction: row;
-            border-top: 2px solid #000000;
-        }
-
-        .row:last-child {
-            border-bottom: 2px solid #000000;
-        }
-
-        .cell {
-            flex: 1 1 auto;
-            border-left: 2px solid #000000;
-        }
-
-        .cell:last-child {
-            border-right: 2px solid #000000;
-        }
-
-        .highlight {
-            background-color: #ee8787;
-        }
-
-        .hit {
-            background-color: #ff0000;
-        }
-
-        .miss {
-            background-color: #808080;
-        }
-
-        .empty {
-            background-color: #afb1b1;
-        }
-
-        footer {
-            margin-top: 3rem;
-            font-size: 12px;
-            font-style: italic;
-            text-align: center;
-        }
-    </style>
-
-    <script>
-        var game = { cells: [], hits: [], sunk: 0, turn: 0, ships: 4 };
-
-        // Generate the board
-        function buildBoard() {
-            for (i = 1; i <= 6; i++) {
-                const row = document.createElement('div');
-                row.className = 'row';
-                board.appendChild(row);
-
-                // Generate the column for this row
-                for (j = 1; j <= 6; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.setAttribute("name", i + '_' + j);
-                    cell.id = i + '_' + j;
-
-                    // Flex box doesn't like empty div so using empty space HTML
-                    cell.innerHTML = '&nbsp;';
-
-                    // Create single-use click event listener
-                    cell.addEventListener("click", function () {
-                        checkCell(this);
-                    }, { once: true });
-
-                    row.appendChild(cell);
-                }
-            }
-        }
-
-        // Place ships from ships JSON
-        function placeShips(ships) {
-            ships.ships.forEach((ship) => {
-                let row = ship.coords[0];
-                let col = ship.coords[1];
-                let rowlength, collength;
-
-                if (ship.orientation == 'horizontal') {
-                    // Row does not change
-                    rowlength = row;
-                    collength = col + ship.size - 1;
-                } else {
-                    // vertical - Col does not change
-                    rowlength = row + ship.size - 1;
-                    collength = col;
-                }
-
-                // Generate cell information
-                for (i = row; i <= rowlength; i++) {
-                    for (j = col; j <= collength; j++) {
-                        game.cells[i + '_' + j] = ship.name;
-                    }
-                }
-
-                // Set up hits tracking
-                game.hits[ship.name] = { 'hits': 0, 'size': ship.size };
-            });
-        }
-
-        // Determine if ship was hit, miss, or sunk
-        function checkCell(element) {
-            game.turn++;
-
-            if (game.cells[element.id] === undefined) {
-                // Shot missed
-                element.classList.add('miss');
-                message.innerText = "Shot missed!";
-            } else {
-                // Shot hit -- determine if sunk or not
-                element.classList.add('hit');
-
-                let ship_name = game.cells[element.id];
-                delete game.cells[element.id];
-                game.hits[ship_name].hits += 1;
-
-                if (game.hits[ship_name].hits == game.hits[ship_name].size) {
-                    game.sunk++;
-                    message.innerText = "Ship was sunk!";
-                } else {
-                    message.innerText = "Ship was hit!";
-                }
-            }
-
-            // Determine end-game state (don't start checking until victory could occur)
-            if (game.turn >= 12) {
-                if (game.sunk == game.ships) {
-                    board.setAttribute("style", "pointer-events:none");
-                    game_status.innerText = "You Win!";
-                    game_status.className = 'win';
-                    game_message.innerText = "You've sunk all of the ships!";
-
-                    // Color rest of grid
-                    colorEmptyCells();
-                } else if (game.turn == 20) {
-                    board.setAttribute("style", "pointer-events:none");
-                    game_status.innerText = "You Lose.";
-                    game_status.className = 'loss';
-                    game_message.innerText = "You've failed to sink all of the ships!";
-
-                    // Show rest of ships
-                    Object.keys(game.cells).forEach((id) => {
-                        const cell = document.getElementById(id);
-                        //cell.className = 'cell highlight';
-                        cell.classList.add('highlight');
-                    });
-
-                    // Color rest of grid
-                    colorEmptyCells();
-                }
-            }
-        }
-
-        // Color empty cells at end-of-game
-        function colorEmptyCells() {
-            let all_cells = document.getElementsByClassName('cell');
-            Object.values(all_cells).forEach((element) => {
-                if (!element.classList.contains('hit') && !element.classList.contains('miss') && !element.classList.contains('highlight')) {
-                    // Only class was 'cell'
-                    element.classList.add('empty');
-                }
-            });
-        }
-    </script>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="javascript.js"></script>
 </head>
 
 <body>
@@ -227,15 +15,21 @@
             game_message = document.getElementById("game-message");
 
             buildBoard();
-            fetch("ships.json")
-                .then(response => response.json())
-                .then(placeShips);
+            newGame();
         }
     </script>
 
     <div id="container">
         <h1>Battleship!</h1>
 
+        <div id="menu">
+            <button id="new-game" onclick="newGame()">New Game</button>
+            <input type="checkbox" id="ships" name="ships">
+            <label for="ships">Dynamic Ships</label>
+        </div>
+        <div id="cheatmode">
+            <button id="hint" onclick="showShips()">Show Ships</button>
+        </div>
         <div id="board"></div>
         <div id="shot-status"></div>
         <div id="game-status"></div>
