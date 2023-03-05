@@ -1,0 +1,544 @@
+<html>
+
+<head>
+    <title>Wordle</title>
+    <style type="text/css">
+        body {
+            background-color: #F8F8F8;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #container {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            font-size: 18px;
+        }
+
+        /* Show / Hide Word */
+        #menu {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        #hint {
+            font-family: monospace;
+            font-size: 16px;
+        }
+
+        #hint,
+        .button {
+            display: inline-block;
+            width: 30%;
+            padding: 10px;
+        }
+
+        .button {
+            border: none;
+            color: #000000;
+            background-color: #a1dff0;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background-color: #39c6ec;
+        }
+
+        .button-pressed,
+        .button:active {
+            background-color: #5ca1e7;
+        }
+
+        .button-pressed:hover {
+            background-color: #abcdef;
+        }
+
+        .button-pressed:active {
+            background-color: #a1dff0;
+        }
+
+        /* Board Functionality */
+        #board {
+            padding: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #000000;
+        }
+
+        .guess {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            border: 3px solid #808080;
+            padding: 5px 0;
+            border-radius: 10px;
+        }
+
+        .guess:not(:last-child) {
+            margin-bottom: 10px;
+        }
+
+        input {
+            font-size: 2rem;
+            width: 2.5rem;
+            text-align: center;
+        }
+
+        input:focus {
+            background-color: #a1dff0;
+            border: 1px dotted #000000;
+            outline: none;
+        }
+
+        .guess.horizontal-shake {
+            animation: horizontal-shaking 0.5s;
+        }
+
+        @keyframes horizontal-shaking {
+            0% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(5px)
+            }
+
+            50% {
+                transform: translateX(-5px)
+            }
+
+            75% {
+                transform: translateX(5px)
+            }
+
+            100% {
+                transform: translateX(0)
+            }
+        }
+
+        /* Color Cells */
+        .match {
+            background-color: green;
+        }
+
+        .partial {
+            background-color: yellow;
+        }
+
+        .miss {
+            background-color: grey;
+        }
+
+        .match,
+        .partial,
+        .miss {
+            color: white;
+        }
+
+
+
+
+
+
+
+        #new-word.button {
+            width: 100%;
+            text-align: center;
+            /* REMOVE BY HAVING MARGIN-BOTTOM ABOVE THIS ELEMENT */
+            margin-top: 1rem;
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 12px;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+        // Global variables
+        var game = { letters: [], score: { won: 0, lost: 0 } };
+        var debug = false;
+        var word_to_guess;
+
+        // Start a new game
+        function newGame() {
+            fetchWord();
+            //buildBoard();
+            generateListeners();
+
+            /**
+             * TODO:
+             * clear scoreboard
+             * clear used letters
+             * clear new game button
+             */
+        }
+
+        // Fetch a new word
+        function fetchWord() {
+            word_to_guess = Math.floor(Math.random() * 2) ? 'pride' : 'beget'; // TESTING
+            console.log(word_to_guess); // TESTING
+            showingWord(); // TESTING
+            return; // TESTING
+
+            fetch("https://random-word-api.herokuapp.com/word?length=5")
+                .then(response => response.json())
+                .then(response => {
+                    word_to_guess = response[0];
+                    console.log(word_to_guess);
+                })
+                .then(showingWord)
+                .catch(error => console.log(error));
+        }
+
+        // Enable or disable showing word
+        function showWord() {
+            const show = document.getElementById('show');
+
+            if (debug == false) {
+                debug = true;
+                show.innerText = 'Hide Word';
+                show.classList.add('button-pressed');
+            } else {
+                debug = false;
+                show.innerText = 'Show Word';
+                show.classList.remove('button-pressed');
+            }
+
+            showingWord();
+        }
+
+        // Show or hide word
+        function showingWord() {
+            if (debug) {
+                hint.innerText = word_to_guess.toUpperCase();
+            } else {
+                hint.innerText = '';
+            }
+        }
+
+        /**
+         * TODO:
+         * build out board dynamically
+         */
+
+        function buildBoard() {
+            board.innerHTML = ''; // Reset to empty
+
+            /*
+            <div id="board">
+                <div id="g1" class="guess digits">
+                    <input type="text" maxlength="1" name="digit1" />
+                    <input type="text" maxlength="1" name="digit2" readonly />
+                    <input type="text" maxlength="1" name="digit3" readonly />
+                    <input type="text" maxlength="1" name="digit4" readonly />
+                    <input type="text" maxlength="1" name="digit5" readonly />
+                </div>
+                ...
+            </div>
+            */
+        }
+
+
+        // Generate the input/keydown event listeners for the input fields
+        function generateListeners() {
+            for (i = 1; i <= 6; i++) {
+                const guess = document.getElementById('g' + i);
+
+                for (input of guess.children) {
+                    input.addEventListener('keydown', function ({ target, keyCode }) {
+                        const previous = target.previousElementSibling;
+                        const next = target.nextElementSibling;
+
+                        // Check specific keyCodes
+                        if (keyCode == 8) {
+                            // Backspace entered
+                            if (previous) {
+                                previous.focus();
+                                previous.removeAttribute('readonly');
+                                target.setAttribute('readonly', '');
+                                target.value = '';
+                            }
+                        } else if (keyCode == 13) {
+                            // Enter key entered
+                            if (next === null) {
+                                target.blur();
+                                target.setAttribute('readonly', '');
+                                generateGuess(guess);
+                            }
+                        }
+                    });
+
+                    input.addEventListener('input', function ({ target, data }) {
+                        const previous = target.previousElementSibling;
+                        const next = target.nextElementSibling;
+
+                        if (data === null) {
+                            // Contents was removed
+                            target.value = '';
+                        } else {
+                            // Validate input
+                            target.value = data.replace(/[^a-zA-Z]/g, '').toUpperCase();
+                        }
+
+                        // Value entered
+                        if (target.value !== '') {
+                            if (next) {
+                                // Go to next input field
+                                next.focus();
+                                next.removeAttribute('readonly');
+                                target.setAttribute('readonly', '');
+                            }
+                        }
+                    });
+                }
+            };
+        }
+
+        // Generate and validate guess word
+        function generateGuess(guess) {
+            let letters = [];
+            for (element of guess.children) {
+                letters.push(element.value.toLowerCase());
+            }
+
+            let guessed_word = letters.join('');
+            console.log(guessed_word);
+
+            processGuess(guessed_word, guess); // TESTING
+            return; // TESTING
+
+            //Pull validation word to confirm it is a word
+            fetch('https://api.datamuse.com/words?max=1&sp=' + guessed_word)
+                .then(response => response.json())
+                .then(response => {
+                    if (response[0].word == guessed_word) {
+                        console.log('Valid word');
+                        processGuess(guessed_word, guess);
+                    } else {
+                        console.log('Invalid word');
+                        guess.classList.add('horizontal-shake');
+                        clearGuess(guess);
+                    }
+                })
+                .catch(error => console.log(error));
+        }
+
+        // Valid word -- determine accuracy for word
+        function processGuess(word, guess) {
+            console.log(word, guess);
+            let inputs = [];
+            for (input of guess.children) {
+                inputs.push(input);
+            }
+
+            let guessed_array = word.split("");
+            console.log(guessed_array);
+
+            displayGuesses(guessed_array);
+
+            if (word_to_guess !== word) {
+                //Mismatch
+                let word_array = word_to_guess.split("");
+                console.log(word_array);
+
+                // Check for exact matches
+                guessed_array.forEach((letter, index) => {
+                    console.log(index, letter);
+
+                    if (word_array[index] == letter) {
+                        // Matched location
+                        console.log('Letter match -- exact');
+                        console.log(inputs[index])
+                        inputs[index].classList.add('match');
+
+                        word_array[index] = null;
+                        guessed_array[index] = null;
+                    }
+                });
+
+                // Check for rest
+                guessed_array.forEach((letter, index) => {
+                    console.log(guessed_array, word_array);
+                    if (letter) {
+                        let in_word = word_array.indexOf(letter);
+                        console.log(in_word);
+
+                        if (in_word == -1) {
+                            console.log('Letter -- total miss');
+                            inputs[index].classList.add('miss');
+                        } else {
+                            console.log('Letter match -- partial');
+                            inputs[index].classList.add('partial');
+                            word_array[in_word] = null;
+                        }
+                    }
+                });
+
+                const next = guess.nextElementSibling
+
+                if (next === null) {
+                    gameLost();
+                } else {
+                    next.children[0].focus();
+                    next.children[0].removeAttribute('readonly');
+                }
+            } else {
+                console.log('Match');
+                // Flag cells as match
+                for (input of guess.children) {
+                    input.classList.add('match');
+                }
+
+                gameWon();
+            }
+        }
+
+        function gameWon() {
+            // Update score
+            game.score.won++;
+            console.log(game.score);
+
+            endGame();
+        }
+
+        function gameLost() {
+            // Update score
+            game.score.lost++;
+            console.log(game.score);
+
+            endGame();
+        }
+
+        function endGame() {
+            /**
+            * TODO
+            * show new game button
+            * show scoreboard
+            */
+        }
+
+        // Invalid word
+        function clearGuess(guess) {
+            // Clear inputs and reset readonly
+            for (input of guess.children) {
+                console.log(input);
+                input.value = '';
+                if (input.previousElementSibling === null) {
+                    input.focus();
+                    input.removeAttribute('readonly');
+                }
+            }
+
+            // Clear class
+            setTimeout(function () {
+                guess.classList.remove('horizontal-shake');
+            }, 1500);
+        }
+
+        /**
+         * TODO:
+         * show guessed letters
+         */
+
+        // Show guessed letters
+        function displayGuesses() {
+
+
+
+        }
+    </script>
+</head>
+
+<body>
+    <script>
+        window.onload = function () {
+            // HTML Elements
+            hint = document.getElementById('hint');
+            board = document.getElementById('board');
+            letters = document.getElementById('letters');
+            scoreboard = document.getElementById('scoreboard');
+
+            // Start game
+            newGame();
+        }
+    </script>
+
+    <div id="container">
+        <h1>Wordle</h1>
+
+        <div id="menu">
+            <div id="show" class="button" onclick="showWord()">Show Word</div>
+            <div id="hint"></div>
+        </div>
+
+        <div id="board">
+            <div id="g1" class="guess digits">
+                <input type="text" maxlength="1" name="digit1" />
+                <input type="text" maxlength="1" name="digit2" readonly />
+                <input type="text" maxlength="1" name="digit3" readonly />
+                <input type="text" maxlength="1" name="digit4" readonly />
+                <input type="text" maxlength="1" name="digit5" readonly />
+            </div>
+            <div id="g2" class="guess digits">
+                <input type="text" maxlength="1" name="digit1" readonly />
+                <input type="text" maxlength="1" name="digit2" readonly />
+                <input type="text" maxlength="1" name="digit3" readonly />
+                <input type="text" maxlength="1" name="digit4" readonly />
+                <input type="text" maxlength="1" name="digit5" readonly />
+            </div>
+            <div id="g3" class="guess">
+                <input type="text" maxlength="1" name="digit1" readonly />
+                <input type="text" maxlength="1" name="digit2" readonly />
+                <input type="text" maxlength="1" name="digit3" readonly />
+                <input type="text" maxlength="1" name="digit4" readonly />
+                <input type="text" maxlength="1" name="digit5" readonly />
+            </div>
+            <div id="g4" class="guess">
+                <input type="text" maxlength="1" name="digit1" readonly />
+                <input type="text" maxlength="1" name="digit2" readonly />
+                <input type="text" maxlength="1" name="digit3" readonly />
+                <input type="text" maxlength="1" name="digit4" readonly />
+                <input type="text" maxlength="1" name="digit5" readonly />
+            </div>
+            <div id="g5" class="guess">
+                <input type="text" maxlength="1" name="digit1" readonly />
+                <input type="text" maxlength="1" name="digit2" readonly />
+                <input type="text" maxlength="1" name="digit3" readonly />
+                <input type="text" maxlength="1" name="digit4" readonly />
+                <input type="text" maxlength="1" name="digit5" readonly />
+            </div>
+            <div id="g6" class="guess">
+                <input type="text" maxlength="1" name="digit1" readonly />
+                <input type="text" maxlength="1" name="digit2" readonly />
+                <input type="text" maxlength="1" name="digit3" readonly />
+                <input type="text" maxlength="1" name="digit4" readonly />
+                <input type="text" maxlength="1" name="digit5" readonly />
+            </div>
+        </div>
+
+        <div id="letters">
+            Used letters here
+            <script>
+                let letterArray = ['Q', 'W', 'E', 'R', 'T'];
+                letterArray.forEach((l) => {
+                    document.write('<div id="letter-' + l + '" class="letter">' + l + '</div>');
+                });
+            </script>
+        </div>
+
+        <div id="scoreboard">scoreboard here</div>
+        <div id="new-word" class="button hidden" onclick="newGame()">New Game</div>
+
+        <footer>Dan Auger, 2023 - DGMD E-28</footer>
+    </div>
+
+</body>
+
+</html>
