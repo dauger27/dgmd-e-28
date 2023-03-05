@@ -1,0 +1,210 @@
+<html>
+
+<head>
+    <title>Tic Tac Toe - Extra Credit</title>
+    <style type="text/css">
+        body {
+            background-color: #F8F8F8;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #container {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            font-size: 18px;
+        }
+
+        #message {
+            text-align: center;
+            padding-bottom: 1rem;
+        }
+
+        /* Board functionality */
+        #board {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px;
+            margin-bottom: 1rem;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
+        }
+
+        .cell {
+            flex: 0 0 32%;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            /*background-color: lightblue;*/
+            border-bottom: 2px solid black;
+        }
+
+        .cell:nth-child(7),
+        .cell:nth-child(8),
+        .cell:nth-child(9) {
+            border-bottom: none;
+        }
+
+        .cell:not(:nth-child(3n)) {
+            border-right: 2px solid black;
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 12px;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+        // Global classes
+        class Cell {
+            constructor(id) {
+                this.id = id;
+                this.content = "&nbsp;";
+            }
+
+            updateContent(letter) {
+                this.content = letter;
+                document.getElementById('cell-' + this.id).innerHTML = letter;
+            }
+        }
+
+        class Board {
+            constructor(cells) {
+                this.cells = cells;
+            }
+
+            updateCell(id, letter) {
+                this.cells[id].updateContent(letter);
+            }
+
+            flatten() {
+                return this.cells.map((cell) => cell.content);
+            }
+        }
+
+        //Global variables
+        var game;
+
+        // Start game functionality
+        function startGame() {
+            game = { turn: 0 };
+
+            // Determine first player randomly
+            game.current = Math.floor(Math.random() * 2) ? 'X' : 'O';
+
+            // Generate board and print it out
+            game.board = buildBoard();
+            printBoard();
+
+            // Set initial messaging
+            message.innerText = game.current + ' to play';
+        }
+
+        // Generate Board object
+        function buildBoard() {
+            // Generate the board
+            let cells = [];
+
+            for (i = 0; i < 9; i++) {
+                let cell = new Cell(i);
+                cells[i] = cell;
+            }
+
+            return new Board(cells);
+        }
+
+        // Print the board to screen
+        function printBoard() {
+            game.board.cells.forEach((cell) => {
+                const div = document.createElement('div');
+                div.id = 'cell-' + cell.id;
+                div.className = 'cell';
+                div.innerHTML = cell.content;
+                div.addEventListener('click', function () {
+                    updateCell(cell.id);
+                    if (!endGame()) {
+                        game.current = (game.current == 'X') ? 'O' : 'X';
+                        message.innerText = game.current + ' to play';
+                    }
+                }, { once: true });
+
+                document.getElementById("board").append(div);
+            });
+        }
+
+        // Update the cell's content
+        function updateCell(id) {
+            game.board.updateCell(id, game.current);
+        }
+
+        // Check the board to determine end-game state (stalemate, win, mid-game)
+        function endGame() {
+            // Skip board check if not enough moves for a victory have been played
+            if (game.turn++ < 4) {
+                return false;
+            }
+
+            // Simplified logic for checking winner
+            let [a, b, c, d, e, f, g, h, i] = game.board.flatten();
+            wins = [
+                [a, b, c],
+                [d, e, f],
+                [g, h, i],
+                [a, d, g],
+                [b, e, h],
+                [c, f, i],
+                [a, e, i],
+                [c, e, g]
+            ];
+
+            let game_over = false;
+            wins.forEach((win) => {
+                w = win.toString();
+                if (w == "X,X,X" || w == "O,O,O") {
+                    game_over = true;
+                }
+            });
+
+            if (game_over) {
+                message.innerText = game.current + ' wins!';
+                return true;
+            } else if (game.turn == 9) {
+                message.innerText = 'Stalemate!';
+                return true;
+            } else {
+                return false;
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <script>
+        window.onload = function () {
+            // Load changing HTML elements
+            message = document.getElementById("message");
+
+            // Start game
+            startGame();
+        }
+    </script>
+
+    <div id="container">
+        <h1>Tic Tac Toe</h1>
+
+        <div id="message"></div>
+        <div id="board"></div>
+
+        <footer>Dan Auger, 2023 - DGMD E-28</footer>
+    </div>
+</body>
+
+</html>
