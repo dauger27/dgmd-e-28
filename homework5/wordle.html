@@ -20,8 +20,10 @@
 
         /* Show / Hide Word */
         #menu {
-            text-align: center;
+            border: 1px solid #000000;
+            padding: 5px;
             margin-bottom: 1rem;
+            text-align: center;
         }
 
         #hint {
@@ -92,6 +94,7 @@
             background-color: #a1dff0;
             border: 1px dotted #000000;
             outline: none;
+            caret-color: transparent;
         }
 
         .guess.horizontal-shake {
@@ -162,21 +165,21 @@
 
     <script>
         // Global variables
-        var game = { letters: [], score: { won: 0, lost: 0 } };
+        var game = { letters: [], score: { won: 0, lost: 0 }, guesses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
         var debug = false;
         var word_to_guess;
 
         // Start a new game
         function newGame() {
             fetchWord();
-            //buildBoard();
+            buildBoard();
             generateListeners();
 
             /**
              * TODO:
-             * clear scoreboard
+             * hide scoreboard
              * clear used letters
-             * clear new game button
+             * hide new game button
              */
         }
 
@@ -187,14 +190,26 @@
             showingWord(); // TESTING
             return; // TESTING
 
-            fetch("https://random-word-api.herokuapp.com/word?length=5")
+            // Generate a random first letter
+            let r = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+
+            // Fetch the API for up to 1000 possible words
+            fetch("https://api.datamuse.com/words?max=1000&sp=" + r + "????")
                 .then(response => response.json())
                 .then(response => {
-                    word_to_guess = response[0];
-                    console.log(word_to_guess);
+                    do {
+                        // Randomize and validate that the return word is 5 letters
+                        word_to_guess = getRandomWord(response).replace(/[^a-z]/g, '');
+                    } while (word_to_guess.length != 5);
                 })
                 .then(showingWord)
                 .catch(error => console.log(error));
+        }
+
+        // Helper function to get a random word from the json array
+        function getRandomWord(words) {
+            let randomIndex = Math.floor(Math.random() * words.length);
+            return words[randomIndex].word;
         }
 
         // Enable or disable showing word
@@ -223,28 +238,34 @@
             }
         }
 
-        /**
-         * TODO:
-         * build out board dynamically
-         */
-
+        // Build out board dynamically and jump to first input cell
         function buildBoard() {
             board.innerHTML = ''; // Reset to empty
 
-            /*
-            <div id="board">
-                <div id="g1" class="guess digits">
-                    <input type="text" maxlength="1" name="digit1" />
-                    <input type="text" maxlength="1" name="digit2" readonly />
-                    <input type="text" maxlength="1" name="digit3" readonly />
-                    <input type="text" maxlength="1" name="digit4" readonly />
-                    <input type="text" maxlength="1" name="digit5" readonly />
-                </div>
-                ...
-            </div>
-            */
-        }
+            // Generate guesses
+            for (i = 1; i <= 6; i++) {
+                const guess = document.createElement('div');
+                guess.id = 'g' + i;
+                guess.className = 'guess';
 
+                // Generate inputs
+                for (j = 1; j <= 5; j++) {
+                    const input = document.createElement('input');
+                    input.id = i + '_' + j;
+                    input.type = 'text';
+                    input.maxLength = 1;
+                    input.readOnly = true;
+                    guess.append(input);
+                }
+
+                board.append(guess);
+            }
+
+            // Focus on first cell and ensure non-readonly
+            let first_cell = document.getElementById('1_1');
+            first_cell.readOnly = false;
+            first_cell.focus();
+        }
 
         // Generate the input/keydown event listeners for the input fields
         function generateListeners() {
@@ -260,16 +281,16 @@
                         if (keyCode == 8) {
                             // Backspace entered
                             if (previous) {
+                                previous.readOnly = false;
                                 previous.focus();
-                                previous.removeAttribute('readonly');
-                                target.setAttribute('readonly', '');
+                                target.readOnly = true;
                                 target.value = '';
                             }
                         } else if (keyCode == 13) {
                             // Enter key entered
                             if (next === null) {
                                 target.blur();
-                                target.setAttribute('readonly', '');
+                                target.readOnly = true;
                                 generateGuess(guess);
                             }
                         }
@@ -291,14 +312,45 @@
                         if (target.value !== '') {
                             if (next) {
                                 // Go to next input field
+                                next.readOnly = false;
                                 next.focus();
-                                next.removeAttribute('readonly');
-                                target.setAttribute('readonly', '');
+                                target.readOnly = true;
                             }
+                        }
+                    });
+
+                    input.addEventListener('focus', function ({ target }) {
+                        if (target.readOnly) {
+                            target.blur();
                         }
                     });
                 }
             };
+
+            document.getElementById('board').addEventListener('click', function ({ target }) {
+                if (target.nodeName == 'INPUT') {
+                    if (target.readOnly) {
+                        target = target.parentElement; // Guess
+                        target = target.parentElement; // Board
+                    } else {
+                        return;
+                    }
+                } else if (target.className == 'guess') {
+                    target = target.parentElement; // Board
+                }
+
+                target.blur();
+
+                // Find non-readonly grandchild
+                for (guess of target.children) {
+                    for (input of guess.children) {
+                        if (input.readOnly === false) {
+                            input.focus();
+                            return;
+                        }
+                    }
+                }
+            });
         }
 
         // Generate and validate guess word
@@ -386,8 +438,8 @@
                 if (next === null) {
                     gameLost();
                 } else {
+                    next.children[0].readOnly = false;
                     next.children[0].focus();
-                    next.children[0].removeAttribute('readonly');
                 }
             } else {
                 console.log('Match');
@@ -431,8 +483,8 @@
                 console.log(input);
                 input.value = '';
                 if (input.previousElementSibling === null) {
+                    input.readOnly = false;
                     input.focus();
-                    input.removeAttribute('readonly');
                 }
             }
 
@@ -478,50 +530,7 @@
             <div id="hint"></div>
         </div>
 
-        <div id="board">
-            <div id="g1" class="guess digits">
-                <input type="text" maxlength="1" name="digit1" />
-                <input type="text" maxlength="1" name="digit2" readonly />
-                <input type="text" maxlength="1" name="digit3" readonly />
-                <input type="text" maxlength="1" name="digit4" readonly />
-                <input type="text" maxlength="1" name="digit5" readonly />
-            </div>
-            <div id="g2" class="guess digits">
-                <input type="text" maxlength="1" name="digit1" readonly />
-                <input type="text" maxlength="1" name="digit2" readonly />
-                <input type="text" maxlength="1" name="digit3" readonly />
-                <input type="text" maxlength="1" name="digit4" readonly />
-                <input type="text" maxlength="1" name="digit5" readonly />
-            </div>
-            <div id="g3" class="guess">
-                <input type="text" maxlength="1" name="digit1" readonly />
-                <input type="text" maxlength="1" name="digit2" readonly />
-                <input type="text" maxlength="1" name="digit3" readonly />
-                <input type="text" maxlength="1" name="digit4" readonly />
-                <input type="text" maxlength="1" name="digit5" readonly />
-            </div>
-            <div id="g4" class="guess">
-                <input type="text" maxlength="1" name="digit1" readonly />
-                <input type="text" maxlength="1" name="digit2" readonly />
-                <input type="text" maxlength="1" name="digit3" readonly />
-                <input type="text" maxlength="1" name="digit4" readonly />
-                <input type="text" maxlength="1" name="digit5" readonly />
-            </div>
-            <div id="g5" class="guess">
-                <input type="text" maxlength="1" name="digit1" readonly />
-                <input type="text" maxlength="1" name="digit2" readonly />
-                <input type="text" maxlength="1" name="digit3" readonly />
-                <input type="text" maxlength="1" name="digit4" readonly />
-                <input type="text" maxlength="1" name="digit5" readonly />
-            </div>
-            <div id="g6" class="guess">
-                <input type="text" maxlength="1" name="digit1" readonly />
-                <input type="text" maxlength="1" name="digit2" readonly />
-                <input type="text" maxlength="1" name="digit3" readonly />
-                <input type="text" maxlength="1" name="digit4" readonly />
-                <input type="text" maxlength="1" name="digit5" readonly />
-            </div>
-        </div>
+        <div id="board"></div>
 
         <div id="letters">
             Used letters here
