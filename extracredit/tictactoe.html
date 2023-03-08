@@ -7,19 +7,15 @@
             background-color: #F8F8F8;
         }
 
-        h1 {
-            text-align: center;
-        }
-
         #container {
             position: absolute;
             left: 20%;
             right: 20%;
             font-size: 18px;
+            text-align: center;
         }
 
         #message {
-            text-align: center;
             padding-bottom: 1rem;
         }
 
@@ -39,13 +35,10 @@
             flex: 0 0 32%;
             height: 50px;
             line-height: 50px;
-            text-align: center;
             border-bottom: 2px solid #000000;
         }
 
-        .cell:nth-child(7),
-        .cell:nth-child(8),
-        .cell:nth-child(9) {
+        .cell:nth-child(n+7) {
             border-bottom: none;
         }
 
@@ -53,133 +46,147 @@
             border-right: 2px solid #000000;
         }
 
+        /* Button */
+        .button {
+            background-color: #a1dff0;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            padding: 15px 0;
+        }
+
+        .button:hover {
+            background-color: #39c6ec;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         footer {
             margin-top: 3rem;
             font-size: 12px;
             font-style: italic;
-            text-align: center;
         }
     </style>
 
     <script>
         // Global classes
-        function updateContent(letter) {
-            this.content = letter;
-            document.getElementById('cell-' + this.id).innerHTML = letter;
+        function showMark() {
+            return (this.isEmpty()) ? "&nbsp;" : this.mark;
         }
 
-        function Cell(id) {
-            this.id = id;
-            this.content = "&nbsp;";
-            this.update = updateContent;
+        function place(mark) {
+            this.mark = mark;
         }
 
-        function updateBoardCell(id, letter) {
-            this.cells[id].update(letter);
+        function isEmpty() {
+            return this.mark == null;
         }
 
-        function flattenBoard() {
-            return this.cells.map((cell) => cell.content);
+        function Square(mark = null) {
+            this.mark = mark;
+            this.showMark = showMark;
+            this.place = place;
+            this.isEmpty = isEmpty;
         }
 
-        function Board(cells) {
-            this.cells = cells;
-            this.updateCell = updateBoardCell;
-            this.flatten = flattenBoard;
-        }
-
-        //Global variables
-        var game;
-
-        // Start game functionality
-        function startGame() {
-            game = { turn: 0 };
-
+        function newGame() {
             // Determine first player randomly
-            game.current = Math.floor(Math.random() * 2) ? 'X' : 'O';
-
-            // Generate board and print it out
-            game.board = buildBoard();
-            printBoard();
+            this.player = Math.floor(Math.random() * 2) ? 'X' : 'O';
 
             // Set initial messaging
-            message.innerText = game.current + ' to play';
-        }
+            document.getElementById('message').innerText = this.player + ' to play';
 
-        // Generate Board object
-        function buildBoard() {
-            // Generate the board
-            let cells = [];
+            // Hide button
+            document.getElementById('new-game').classList.add('hidden');
 
+            // Reset values
+            this.turn = 0;
+            this.gameover = false;
+
+            // Clear any existing board
+            var board = document.getElementById('board');
+            board.innerHTML = '';
+            board.removeAttribute('style');
+
+            // Build board
             for (i = 0; i < 9; i++) {
-                let cell = new Cell(i);
-                cells[i] = cell;
-            }
+                const square = new Square();
 
-            return new Board(cells);
-        }
-
-        // Print the board to screen
-        function printBoard() {
-            game.board.cells.forEach((cell) => {
                 const div = document.createElement('div');
-                div.id = 'cell-' + cell.id;
                 div.className = 'cell';
-                div.innerHTML = cell.content;
-                div.addEventListener('click', function () {
-                    updateCell(cell.id);
-                    if (!endGame()) {
-                        game.current = (game.current == 'X') ? 'O' : 'X';
-                        message.innerText = game.current + ' to play';
+                div.innerHTML = square.showMark();
+                div.addEventListener('click', () => {
+                    if (square.isEmpty()) {
+                        square.place(this.player);
+                        div.innerHTML = square.showMark();
+
+                        if (!this.checkWin()) {
+                            this.switchTurn();
+                        }
                     }
-                }, { once: true });
-
-                document.getElementById("board").append(div);
-            });
+                });
+                board.append(div);
+            }
         }
 
-        // Update the cell's content
-        function updateCell(id) {
-            game.board.updateCell(id, game.current);
-        }
-
-        // Check the board to determine end-game state (stalemate, win, mid-game)
-        function endGame() {
+        function checkWin() {
             // Skip board check if not enough moves for a victory have been played
-            if (game.turn++ < 4) {
+            if (this.turn++ < 4) {
                 return false;
             }
 
             // Simplified logic for checking winner
-            let [a, b, c, d, e, f, g, h, i] = game.board.flatten();
+            let [tl, tc, tr, ml, mc, mr, bl, bc, br] = Array.from(document.getElementsByClassName('cell')).map(cell => cell.innerText);
             wins = [
-                [a, b, c],
-                [d, e, f],
-                [g, h, i],
-                [a, d, g],
-                [b, e, h],
-                [c, f, i],
-                [a, e, i],
-                [c, e, g]
+                [tl, tc, tr], // top row
+                [ml, mc, mr], // middle row
+                [bl, bc, br], // bottom row
+                [tl, ml, bl], // left column
+                [tc, mc, bc], // center column
+                [tr, mr, br], // right column
+                [tl, mc, br], // negative diagonal
+                [bl, mc, tr] // positive diagonal
             ];
 
-            let game_over = false;
-            wins.forEach((win) => {
-                w = win.toString();
-                if (w == "X,X,X" || w == "O,O,O") {
-                    game_over = true;
+            wins.forEach((cells) => {
+                win = cells.join('');
+                if (win == "XXX" || win == "OOO") {
+                    this.gameover = true;
                 }
             });
 
-            if (game_over) {
-                message.innerText = game.current + ' wins!';
+            if (this.gameover) {
+                this.endGame(this.player + ' wins!');
                 return true;
-            } else if (game.turn == 9) {
-                message.innerText = 'Stalemate!';
+            } else if (this.turn == 9) {
+                this.endGame('Stalemate!');
                 return true;
             } else {
                 return false;
             }
+        }
+
+        function endGame(status) {
+            document.getElementById('message').innerText = status;
+            document.getElementById('new-game').classList.remove('hidden');
+            document.getElementById('board').setAttribute("style", "pointer-events:none");
+        }
+
+        function switchTurn() {
+            this.player = (this.player == 'X') ? 'O' : 'X';
+            document.getElementById('message').innerText = this.player + ' to play';
+        }
+
+        function Game() {
+            this.gameover = false;
+            this.player = null;
+            this.turn = 0;
+            this.newGame = newGame;
+            this.checkWin = checkWin;
+            this.endGame = endGame;
+            this.switchTurn = switchTurn;
         }
     </script>
 </head>
@@ -187,11 +194,10 @@
 <body>
     <script>
         window.onload = function () {
-            // Load changing HTML elements
-            message = document.getElementById("message");
-
-            // Start game
-            startGame();
+            // Start new game
+            game = new Game();
+            game.newGame();
+            document.getElementById('new-game').addEventListener('click', function () { game.newGame() });
         }
     </script>
 
@@ -200,6 +206,7 @@
 
         <div id="message"></div>
         <div id="board"></div>
+        <div id="new-game" class="button">New Game</div>
 
         <footer>Dan Auger, 2023 - DGMD E-28</footer>
     </div>
