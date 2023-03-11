@@ -18,6 +18,28 @@
             font-size: 18px;
         }
 
+        /* Flex container width based on screen size */
+        @media screen and (min-width: 700px) {
+            #container {
+                left: 25%;
+                right: 25%;
+            }
+        }
+
+        @media screen and (min-width: 800px) {
+            #container {
+                left: 30%;
+                right: 30%;
+            }
+        }
+
+        @media screen and (min-width: 900px) {
+            #container {
+                left: 35%;
+                right: 35%;
+            }
+        }
+
         /* Show / Hide Word */
         #menu {
             border: 1px solid #000000;
@@ -195,6 +217,10 @@
             list-style-type: none
         }
 
+        li[id] {
+            text-align: center;
+        }
+
         #new-word.button {
             width: 100%;
             text-align: center;
@@ -225,7 +251,7 @@
             this.generateListeners();
 
             document.getElementById('letters').innerHTML = '';
-            //document.getElementById('scoreboard').classList.add('hidden');
+            document.getElementById('scoreboard').classList.add('hidden');
             document.getElementById('new-word').classList.add('hidden');
         }
 
@@ -246,9 +272,10 @@
                     do {
                         // Randomize and validate that the return word is 5 letters
                         this.word = getRandomWord(response).replace(/[^a-z]/g, '');
+                        console.log(this.word);
                     } while (this.word.length != 5);
+                    this.showWord();
                 })
-                .then(this.showWord)
                 .catch(error => console.log(error));
         }
 
@@ -531,28 +558,37 @@
             */
 
 
-            console.log(this);
 
             if (win) {
-                //console.log(attempts);
-                //game.guesses[attempts]++;
-                //game.score.won++;
-                //console.log(game.score);
-
+                this.guesses[attempts]++;
+                this.wins++;
+                if (this.last == 'win') {
+                    this.streak++;
+                } else {
+                    this.last = 'win';
+                    this.streak = 1;
+                }
             } else {
-                //game.score.lost++;
-                //console.log(game.score);
+                this.loses++;
+                if (this.last == 'loss') {
+                    this.streak++;
+                } else {
+                    this.last = 'loss';
+                    this.streak = 1;
+                }
             }
 
+            // Update scoreboard HTML
+            document.getElementById('win-counter').innerText = this.wins;
+            document.getElementById('loss-counter').innerText = this.loses;
+            document.getElementById('streak').innerText = (this.last == 'win' ? '+' : '-') + this.streak;
+            document.getElementById('win-percentage').innerText = Math.floor((this.wins / (this.wins + this.loses)) * 100) + '%';
 
-            //console.log(game.guesses);
+            for (i = 1; i <= 6; i++) {
+                document.getElementById('breakdown-' + i).innerText = this.guesses[i];
+            }
 
-            const scoreboard = document.getElementById('scoreboard');
-
-
-
-
-            scoreboard.classList.remove('hidden');
+            document.getElementById('scoreboard').classList.remove('hidden');
             document.getElementById('new-word').classList.remove('hidden');
         }
 
