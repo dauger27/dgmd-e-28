@@ -18,28 +18,6 @@
             font-size: 18px;
         }
 
-        /* Flex container width based on screen size */
-        @media screen and (min-width: 700px) {
-            #container {
-                left: 25%;
-                right: 25%;
-            }
-        }
-
-        @media screen and (min-width: 800px) {
-            #container {
-                left: 30%;
-                right: 30%;
-            }
-        }
-
-        @media screen and (min-width: 900px) {
-            #container {
-                left: 35%;
-                right: 35%;
-            }
-        }
-
         /* Show / Hide Word */
         #menu {
             border: 1px solid #000000;
@@ -192,10 +170,11 @@
         /* Scoreboard */
         #scoreboard {
             text-align: center;
-            border: 1px dashed #000000;
+            border: 2px dashed #e7e1e1;
             padding-bottom: 5px;
-            width: 50%;
-            margin: 0 auto 1rem;
+            width: 75%;
+            margin: 0 auto;
+            background: #F8F8F8;
         }
 
         #scoreboard>h3,
@@ -221,6 +200,56 @@
             text-align: center;
         }
 
+        /* Modal */
+        #modal {
+            position: fixed;
+            top: 220;
+            left: 25%;
+            right: 25%;
+        }
+
+        .close {
+            position: absolute;
+            top: -5px;
+            right: 60px;
+            font-size: 35px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #999999;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Scoreboard fade-in animation */
+        .fade-in {
+            animation-duration: 3.5s;
+            animation-fill-mode: both;
+            animation-name: fadeIn;
+        }
+
+        @-webkit-keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
         #new-word.button {
             width: 100%;
             text-align: center;
@@ -237,6 +266,34 @@
             font-style: italic;
             text-align: center;
         }
+
+        /* Flex functionality based on screen size */
+        @media screen and (min-width: 700px) {
+
+            #container,
+            #modal {
+                left: 25%;
+                right: 25%;
+            }
+        }
+
+        @media screen and (min-width: 800px) {
+
+            #container,
+            #modal {
+                left: 30%;
+                right: 30%;
+            }
+        }
+
+        @media screen and (min-width: 900px) {
+
+            #container,
+            #modal {
+                left: 35%;
+                right: 35%;
+            }
+        }
     </style>
 
     <script>
@@ -251,17 +308,12 @@
             this.generateListeners();
 
             document.getElementById('letters').innerHTML = '';
-            document.getElementById('scoreboard').classList.add('hidden');
+            closeModal();
             document.getElementById('new-word').classList.add('hidden');
         }
 
         // Fetch a new word
         function fetchWord() {
-            this.word = Math.floor(Math.random() * 2) ? 'pride' : 'beget'; // TESTING
-            console.log(this.word); // TESTING
-            this.showWord(); // TESTING
-            return; // TESTING
-
             // Generate a random first letter
             let r = String.fromCharCode(97 + Math.floor(Math.random() * 26));
 
@@ -272,7 +324,6 @@
                     do {
                         // Randomize and validate that the return word is 5 letters
                         this.word = getRandomWord(response).replace(/[^a-z]/g, '');
-                        console.log(this.word);
                     } while (this.word.length != 5);
                     this.showWord();
                 })
@@ -418,21 +469,16 @@
             }
 
             let guessed_word = letters.join('');
-            console.log(guessed_word);
-            console.log(this.word);
-
-            this.processGuess(guessed_word, guess); // TESTING
-            return; // TESTING
 
             //Pull validation word to confirm it is a word
             fetch('https://api.datamuse.com/words?max=1&sp=' + guessed_word)
                 .then(response => response.json())
                 .then(response => {
                     if (response[0].word == guessed_word) {
-                        console.log('Valid word');
+                        // Valid word
                         this.processGuess(guessed_word, guess);
                     } else {
-                        console.log('Invalid word');
+                        // Invalid word
                         guess.classList.add('horizontal-shake');
                         this.clearGuess(guess);
                     }
@@ -442,7 +488,6 @@
 
         // Valid word -- determine accuracy for word
         function processGuess(word, guess) {
-            console.log(word, guess);
             let inputs = [];
             for (input of guess.children) {
                 inputs.push(input);
@@ -454,16 +499,11 @@
             if (this.word !== word) {
                 //Mismatch
                 let word_array = this.word.split("");
-                console.log(word_array);
 
                 // Check for exact matches
                 guessed_array.forEach((letter, index) => {
-                    console.log(index, letter);
-
                     if (word_array[index] == letter) {
                         // Matched location
-                        console.log('Letter match -- exact');
-                        console.log(inputs[index])
                         inputs[index].classList.add('match');
 
                         word_array[index] = null;
@@ -473,16 +513,11 @@
 
                 // Check for rest
                 guessed_array.forEach((letter, index) => {
-                    console.log(guessed_array, word_array);
                     if (letter) {
                         let in_word = word_array.indexOf(letter);
-                        console.log(in_word);
-
                         if (in_word == -1) {
-                            console.log('Letter -- total miss');
                             inputs[index].classList.add('miss');
                         } else {
-                            console.log('Letter match -- partial');
                             inputs[index].classList.add('partial');
                             word_array[in_word] = null;
                         }
@@ -513,7 +548,6 @@
         function clearGuess(guess) {
             // Clear inputs and reset readonly
             for (input of guess.children) {
-                console.log(input);
                 input.value = '';
                 if (input.previousElementSibling === null) {
                     input.readOnly = false;
@@ -552,13 +586,6 @@
 
         // End Game functionality
         function endGame(win, attempts = false) {
-            /**
-            * TODO
-            * show scoreboard
-            */
-
-
-
             if (win) {
                 this.guesses[attempts]++;
                 this.wins++;
@@ -588,7 +615,7 @@
                 document.getElementById('breakdown-' + i).innerText = this.guesses[i];
             }
 
-            document.getElementById('scoreboard').classList.remove('hidden');
+            openModal();
             document.getElementById('new-word').classList.remove('hidden');
         }
 
@@ -614,8 +641,7 @@
 
         // Helper function to get a random word from the json array
         function getRandomWord(words) {
-            let randomIndex = Math.floor(Math.random() * words.length);
-            return words[randomIndex].word;
+            return words[Math.floor(Math.random() * words.length)].word;
         }
 
         // Helper function to enable or disable showing the word
@@ -633,6 +659,19 @@
             }
 
             game.showWord();
+        }
+
+        // Helper functions to for Modal window
+        function openModal() {
+            const modal = document.getElementById("modal");
+            modal.classList.remove('hidden');
+            modal.classList.add('fade-in');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("modal");
+            modal.classList.add('hidden');
+            modal.classList.remove('fade-in');
         }
     </script>
 </head>
@@ -657,47 +696,50 @@
         <div id="board"></div>
         <div id="letters"></div>
 
-        <div id="scoreboard">
-            <h3>Scoreboard</h3>
+        <div id="modal">
+            <span class=" close" onclick="closeModal()">&times;</span>
+            <div id="scoreboard">
+                <h3>Scoreboard</h3>
 
-            <div class="align-list">
-                <ul>
-                    <li>Wins:</li>
-                    <li>Loses:</li>
-                    <li>Streak:</li>
-                    <li>Win %:</li>
-                </ul>
-            </div>
-            <div class="align-list">
-                <ul>
-                    <li id="win-counter">0</li>
-                    <li id="loss-counter">0</li>
-                    <li id="streak">0</li>
-                    <li id="win-percentage">-</li>
-                </ul>
-            </div>
+                <div class="align-list">
+                    <ul>
+                        <li>Wins:</li>
+                        <li>Loses:</li>
+                        <li>Streak:</li>
+                        <li>Win %:</li>
+                    </ul>
+                </div>
+                <div class="align-list">
+                    <ul>
+                        <li id="win-counter">0</li>
+                        <li id="loss-counter">0</li>
+                        <li id="streak">0</li>
+                        <li id="win-percentage">-</li>
+                    </ul>
+                </div>
 
-            <h4>Breakdown</h4>
-            <div class="align-list">
-                <ul>
-                    <li>1 Guess:</li>
-                    <li>2 Guesses:</li>
-                    <li>3 Guesses:</li>
-                    <li>4 Guesses:</li>
-                    <li>5 Guesses:</li>
-                    <li>6 Guesses:</li>
-                </ul>
-            </div>
+                <h4>Breakdown</h4>
+                <div class="align-list">
+                    <ul>
+                        <li>1 Guess:</li>
+                        <li>2 Guesses:</li>
+                        <li>3 Guesses:</li>
+                        <li>4 Guesses:</li>
+                        <li>5 Guesses:</li>
+                        <li>6 Guesses:</li>
+                    </ul>
+                </div>
 
-            <div class="align-list">
-                <ul>
-                    <li id="breakdown-1">0</li>
-                    <li id="breakdown-2">0</li>
-                    <li id="breakdown-3">0</li>
-                    <li id="breakdown-4">0</li>
-                    <li id="breakdown-5">0</li>
-                    <li id="breakdown-6">0</li>
-                </ul>
+                <div class="align-list">
+                    <ul>
+                        <li id="breakdown-1">0</li>
+                        <li id="breakdown-2">0</li>
+                        <li id="breakdown-3">0</li>
+                        <li id="breakdown-4">0</li>
+                        <li id="breakdown-5">0</li>
+                        <li id="breakdown-6">0</li>
+                    </ul>
+                </div>
             </div>
         </div>
 
